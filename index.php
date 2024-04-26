@@ -1,38 +1,49 @@
-<?php
-#Задание 1
-if(isset($_GET['info'])){
-    $info = $_GET['info'];
-    echo $info;
+<?php 
+$fd = fopen("titanic.csv", 'r') or die("не удалось открыть файл");
+
+$titles = explode(',', fgets($fd));
+$titles = array_map(fn(string $title) => "<th>$title</th>", $titles);
+$tableHeader = implode('', $titles);
+
+$tableBody = '';
+
+while(!feof($fd))
+{
+    $tbody = explode(',', fgets($fd));
+    [4 => $age, 2 => $name] = $tbody;
+    if(isset($_GET['age'])) 
+    {
+        $ageReq = $_GET['age'];
+        if ($age == $ageReq){
+            $tbody = array_map(fn(string $tbody) => "<td>$tbody</td>", $tbody);
+            $tableBody .= '<tr>' . implode('', $tbody) . '</tr>';
+        }    
+    }
+    else if (isset($_GET['name'])){
+        $nameReq = $_GET['name'];
+        if(preg_match("/$nameReq/i", $name)){
+          $tbody = array_map(fn(string $tbody) => "<td>$tbody</td>", $tbody);
+          $tableBody .= '<tr>' . implode('', $tbody) . '</tr>';
+        }
+    }
+    else {
+        $tbody = array_map(fn(string $tbody) => "<td>$tbody</td>", $tbody);
+        $tableBody .= '<tr>' . implode('', $tbody) . '</tr>';
+    }
+    
 }
-#Задание 2
-elseif (isset($_GET['num'])) {
-    $num = $_GET['num'];
-    if($num > 1000){
-        echo 'Число должно быть меньше 1000';
-        exit;
-    }
-    function isPrime($n) {
-        if ($n <= 1) {
-          return false;
-        }
-        for ($i = 2; $i <= sqrt($n); $i++) {
-          if ($n % $i === 0) {
-            return false;
-          }
-        }
-        return true;
-      }
-    
-      $primeNumbers = [];
-      for ($i = 2; $i <= $num; $i++) {
-        if (isPrime($i)) {
-          $primeNumbers[] = $i;
-        }
-      }
-    
-      echo "Массив простых чисел: " . implode(", ", $primeNumbers);
-    } else {
-      echo "Не переданы параметры в URL.";
-    }
+
+echo <<<THEAD
+<table>
+  <tr>
+    $tableHeader
+  </tr>
+  
+  $tableBody
+  
+</table>
+THEAD;
+
+fclose($fd); 
 
 ?>
